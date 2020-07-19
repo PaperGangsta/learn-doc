@@ -208,3 +208,41 @@ object Singleton{}
 
 
 ### Lambda
+
+#### 集合
+
+`listof()`创建一个不可变集合
+
+`mutableListOf()`创建一个可变集合
+
+
+
+#### 集合的函数式api
+
+通常不建议在Lambda中写过长的代码
+
+**Lambda**语法结构：
+
+```kotlin
+{参数名1:参数类型, 参数名2:参数类型 -> 函数体}
+```
+
+`->`符号表示参数列表的结束和函数体的开始
+
+函数体中最后一行代码会成为函数体的返回值
+
+
+
+```kotlin
+val list = listOf("Apple","Banana","Orange")
+val lambda = {fruit:String -> fruit.length}
+var maxLengthFruit = list.maxBy(lambda)
+```
+
+
+
+如果Lambda的参数列表中只有一个参数的时候可以将其简化为`it`
+
+```kotlin
+var maxLengthFruit = list.maxBy{it.length}
+```
