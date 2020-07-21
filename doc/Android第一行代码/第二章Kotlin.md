@@ -246,3 +246,155 @@ var maxLengthFruit = list.maxBy(lambda)
 ```kotlin
 var maxLengthFruit = list.maxBy{it.length}
 ```
+
+
+
+### 空指针异常
+
+#### 可空类型系统
+
+`Kotlin`将空指针的异常检查放到了编译期。如果存在空指针异常的风险就会报错。
+
+同时Kotlin也提供了可为空的类型系统只需要在类名后加`?`即可。
+
+`Int`为不可空而`Int?`就表示可空。
+
+`String`为不可空而`String?`就表示可空
+
+但如果每个地方都去判空,去进行很多的if检查,势必为造成代码的啰嗦。
+
+
+
+#### 辅助判空
+
+`Kotlin`专门为上述问题提供了一系列的辅助工具来解决此问题。
+
+1. `?.`
+
+   当对象为空时,什么也不做;当对象不为空时正常调用。
+
+   ```Kotlin
+   if(a!=null){
+       a.doSomething();
+   }
+   //用?.改写
+   a?.doSomething();
+   
+   ```
+
+   
+
+2. `?:`
+
+   左右两边都接收一个表达式，如果左边表达式的结果不为空就返回左边表达式的结果,否则就返回右边表达式的结果
+
+   ```kotlin
+   val c = if(a != null){
+       a
+   }else{
+       b
+   }
+   
+   val c = a?:b
+   
+   //编写一段获得文本长度的代码
+   fun getTextLength(text: String?):Int{
+       if(text != null){
+           return text.length
+       }
+       rerturn 0
+   }
+   
+   fun getTextLength(text: String?) = text?.length ?: 0
+   ```
+
+3. 强行通过编译`!!`(非空断言工具)
+
+   ```kotlin
+   var content: String? ="hello"
+   
+   fun main(){
+       if(content!=null){
+           printUpperCase()
+       }
+   }
+   fun printUpperCase(){
+       val upperCase = content.toUpperCase()
+   	println(upperCase)
+   }
+   
+   //上面这段代码无法通过编译。Kotlin并不知道外部函数已经进行了非空检查。
+   //在这种情况下我们需要强行通过编译
+   fun printUpperCase(){
+       val upperCase = content!!.toUpperCase()
+       println(upperCase)
+   }
+   ```
+
+   上述写法极有风险。很有可能会发生异常。当要决定要这样做的时候，应该好好的再想想是不是有更好的做法。
+
+4. `let`函数
+
+   ```kotlin
+   fun doStudy(study: Study?){
+   	study?.readBooks()
+       study?.doHomework()
+   }
+   
+   //转化为一般的if
+   fun doStudy(study: Study?){
+       if(study != null){
+           study.readBooks()
+       }
+       if(study != null){
+           study.doHomework()
+       }
+   }
+   
+   //本来一次if可以解决的问题,在?.的限制下变成了每次调用study对象的方法的时候都需要进行一次if的调用
+   
+   //结合?.和let函数对代码进行优化
+   // ?. 当对象为空时,什么都不做,对象不空时调用let函数
+   //let 函数 会将 study 对象本身作为参数传入Lambda中
+   fun doStudy(study: Study?){
+       study?.let{ stu ->
+        	stu.readBooks()
+           stu.doHomework()
+       }
+   }
+   
+   //再优化
+   //Lambda表达式参数列表中只有一个参数时候可以不声明参数名
+   fun doStudy(study:Study?){
+       study?.let{
+           it.readBooks()
+           it.doHomework()
+       }
+   }
+   ```
+
+   `let`函数可以做全局的判空,而if是不可以的。
+
+   如下：将study参数变为一个全局变量
+
+   ```kotlin
+   var study:Study? = null
+   
+   //会报错
+   fun doStudy(){
+   	if(study != null){
+   		study.readBooks()
+   		study.doHomework()
+   	}
+   }
+   
+   //正确
+   fun doStudy(study: Study?){
+       study?.let{
+        	it.readBooks()
+           it.doHomework()
+       }
+   }
+   ```
+
+   
